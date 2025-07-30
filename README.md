@@ -21,6 +21,7 @@
 - 📊 **Trajectory Recording**: Detailed logging of all agent actions for debugging and analysis
 - ⚙️ **Flexible Configuration**: JSON-based configuration with environment variable support
 - 🚀 **Easy Installation**: Simple pip-based installation
+- 🔒 **Sandbox Mode**: Isolated execution environments for dependency management without conflicts
 
 ## 🚀 Quick Start
 
@@ -135,6 +136,12 @@ trae-cli run "Refactor the database module" --trajectory-file debug_session.json
 
 # Force to generate patches
 trae-cli run "Update the API endpoints" --must-patch
+
+# Use sandbox mode for dependency isolation
+trae-cli run "Configure this project's dependencies" --sandbox --working-dir /path/to/project
+
+# Use virtual environment sandbox for Python projects
+trae-cli run "Install Python dependencies in isolated environment" --sandbox --sandbox-type venv
 ```
 
 #### `trae interactive` - Interactive Mode

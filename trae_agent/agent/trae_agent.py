@@ -25,11 +25,21 @@ TraeAgentToolNames = [
     "bash",
 ]
 
+TraeAgentSandboxToolNames = [
+    "str_replace_based_edit_tool",
+    "sequentialthinking",
+    "json_edit_tool",
+    "task_done",
+    "sandbox_bash",
+    "sandbox",
+]
+
 
 class TraeAgent(Agent):
     """Trae Agent specialized for software engineering tasks."""
 
-    def __init__(self, config: Config | None = None, llm_client: LLMClient | None = None):
+    def __init__(self, config: Config | None = None, llm_client: LLMClient | None = None, 
+                 sandbox_enabled: bool = False, sandbox_type: str = "docker"):
         """Initialize TraeAgent.
 
         Args:
@@ -37,11 +47,15 @@ class TraeAgent(Agent):
                    Required if llm_client is not provided.
             llm_client: Optional pre-configured LLMClient instance.
                        If provided, it will be used instead of creating a new one from config.
+            sandbox_enabled: Whether to enable sandbox mode for isolated execution.
+            sandbox_type: Type of sandbox to use ('docker' or 'venv').
         """
         self.project_path: str = ""
         self.base_commit: str | None = None
         self.must_patch: str = "false"
         self.patch_path: str | None = None
+        self.sandbox_enabled = sandbox_enabled
+        self.sandbox_type = sandbox_type
         super().__init__(config=config, llm_client=llm_client)
 
     @classmethod
@@ -87,7 +101,7 @@ class TraeAgent(Agent):
         self._task: str = task
 
         if tool_names is None:
-            tool_names = TraeAgentToolNames
+            tool_names = TraeAgentSandboxToolNames if self.sandbox_enabled else TraeAgentToolNames
 
         # Get the model provider from the LLM client
         provider = self._llm_client.provider.value
