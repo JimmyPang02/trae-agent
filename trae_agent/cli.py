@@ -26,17 +26,19 @@ _ = load_dotenv()
 console = Console()
 
 
-def create_agent(config: Config) -> TraeAgent:
+def create_agent(config: Config, sandbox_enabled: bool = False, sandbox_type: str = "docker") -> TraeAgent:
     """
     create_agent creates a Trae Agent with the specified configuration.
     Args:
         config: Agent configuration. It is expected that the config comes from load_config.
+        sandbox_enabled: Whether to enable sandbox mode for isolated execution.
+        sandbox_type: Type of sandbox to use ('docker' or 'venv').
     Return:
         TraeAgent object
     """
     try:
         # Create agent
-        agent = TraeAgent(config)
+        agent = TraeAgent(config, sandbox_enabled=sandbox_enabled, sandbox_type=sandbox_type)
         return agent
 
     except Exception as e:
@@ -68,6 +70,8 @@ def cli():
 @click.option("--config-file", help="Path to configuration file", default="trae_config.json")
 @click.option("--trajectory-file", "-t", help="Path to save trajectory file")
 @click.option("--patch-path", "-pp", help="Path to patch file")
+@click.option("--sandbox", "-s", is_flag=True, help="Enable sandbox mode for isolated execution")
+@click.option("--sandbox-type", help="Type of sandbox: 'docker' or 'venv'", default="docker")
 def run(
     task: str | None,
     file_path: str | None,
@@ -81,6 +85,8 @@ def run(
     must_patch: bool = False,
     config_file: str = "trae_config.json",
     trajectory_file: str | None = None,
+    sandbox: bool = False,
+    sandbox_type: str = "docker",
 ):
     """
     Run is the main function of tace. It runs a task using Trae Agent.
@@ -112,7 +118,7 @@ def run(
 
     config = load_config(config_file, provider, model, model_base_url, api_key, max_steps)
     # Create agent
-    agent: TraeAgent = create_agent(config)
+    agent: TraeAgent = create_agent(config, sandbox_enabled=sandbox, sandbox_type=sandbox_type)
 
     # Set up trajectory recording
     trajectory_path = None
@@ -149,6 +155,12 @@ def run(
         config_file,
         trajectory_path,
     )
+    
+    # Print sandbox info if enabled
+    if sandbox:
+        console.print(f"[blue]Sandbox mode enabled: {sandbox_type}[/blue]")
+        if sandbox_type == "docker":
+            console.print("[yellow]Note: Docker must be installed and running for sandbox mode[/yellow]")
 
     agent.set_cli_console(cli_console)
 

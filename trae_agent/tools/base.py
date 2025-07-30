@@ -28,6 +28,31 @@ class ToolExecResult:
     output: str | None = None
     error: str | None = None
     error_code: int = 0
+    
+    def merge(self, other: "ToolExecResult") -> "ToolExecResult":
+        """Merge this result with another result."""
+        merged_output = ""
+        if self.output:
+            merged_output += self.output
+        if other.output:
+            merged_output += other.output
+            
+        merged_error = None
+        if self.error and other.error:
+            merged_error = f"{self.error}\n{other.error}"
+        elif self.error:
+            merged_error = self.error
+        elif other.error:
+            merged_error = other.error
+            
+        # Use the non-zero error code if any
+        merged_error_code = other.error_code if other.error_code != 0 else self.error_code
+        
+        return ToolExecResult(
+            output=merged_output if merged_output else None,
+            error=merged_error,
+            error_code=merged_error_code
+        )
 
 
 @dataclass
